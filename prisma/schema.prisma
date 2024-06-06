@@ -1,0 +1,149 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "mongodb"
+  url       = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @default(uuid()) @map("_id") 
+  userId    String   @unique
+  name      String
+  imageUrl  String
+  email     String
+
+  servers  Server[] @relation("ProfileServers")
+  members  Member[] @relation("ProfileMembers")
+  channels  Channel[] @relation("ProfileChannels")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Server {
+  id        String   @id @default(uuid()) @map("_id") 
+  name       String
+  imageUrl   String
+  inviteCode String @unique
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "ProfileServers")
+
+  // Member array contain details of all Members
+  members Member[] @relation("ServerMembers")
+  // Channel array contain details of all channels , that are comes inside the Server 
+  channels Channel[] @relation("ServerChannels")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MemberRole {
+  ADMIN
+  MODERATOR
+  GUEST
+}
+
+model Member {
+   id        String   @id @default(uuid()) @map("_id") 
+  role MemberRole @default(GUEST)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "ProfileMembers")
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade, name: "ServerMembers")
+
+  message Message[]
+  directMessages DirectMessage[]
+
+  conversationsInitiated Conversation[] @relation("MemberOne")
+  conversationReceived Conversation[] @relation("MemberTwo")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+model Channel {
+   id        String   @id @default(uuid()) @map("_id") 
+  name String
+  type ChannelType @default(TEXT)
+
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade, name: "ProfileChannels")
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade, name: "ServerChannels")
+
+  message Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+   id        String   @id @default(uuid()) @map("_id") 
+  content String
+
+  fileUrl String?
+
+  memberId String
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  channelId String
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Conversation {
+   id        String   @id @default(uuid()) @map("_id") 
+
+  memberOneId String
+  memberOne Member @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+
+  memberTwoId String
+  memberTwo Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+
+  directMessages DirectMessage[]
+
+  @@unique([memberOneId, memberTwoId])
+}
+
+model DirectMessage {
+   id        String   @id @default(uuid()) @map("_id") 
+  content String
+  fileUrl String?
+
+  memberId String
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  delete Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+
+
+
