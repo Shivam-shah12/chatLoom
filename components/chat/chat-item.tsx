@@ -80,7 +80,7 @@ export const ChatItem = ({
 
     window.addEventListener("keydown", handelKeyDown);
     return () => window.removeEventListener("keyDown", handelKeyDown);
-  }, []);
+  },[]);
 
   const form = useForm<z.infer<typeof formSchemea>>({
     resolver: zodResolver(formSchemea),

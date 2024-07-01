@@ -1,3 +1,5 @@
+// pages/api/direct-messages.js
+
 import { currentProfilePages } from "@/lib/current-profile-pages";
 import { db } from "@/lib/db";
 import { NextApiResponseServerIo } from "@/types";
@@ -52,7 +54,7 @@ export default async function handler(
                     }
                 }
             }
-        })
+        });
 
         if (!conversation) {
             return res.status(404).json({ error: "Conversation not found" });
@@ -108,7 +110,7 @@ export default async function handler(
                         }
                     }
                 }
-            })
+            });
         }
         if (req.method === "PATCH") {
             if (!isMessageOwner) {
@@ -129,7 +131,7 @@ export default async function handler(
                         }
                     }
                 }
-            })
+            });
         }
 
         const updateKey = `chat:${conversation.id}:messages.update`;
